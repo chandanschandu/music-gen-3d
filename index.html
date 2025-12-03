@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Symphony: 3D AI Music Explorer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #app {
+            display: grid;
+            grid-template-columns: 300px 1fr 250px;
+            grid-template-rows: 60px 1fr 90px;
+            height: 100vh;
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        @media (max-width: 1200px) {
+            #app {
+                grid-template-columns: 250px 1fr 220px;
+                grid-template-rows: 50px 1fr 80px;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            #app {
+                grid-template-columns: 200px 1fr 180px;
+                grid-template-rows: 45px 1fr 70px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            #app {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+                height: 100vh;
+                overflow: hidden;
+            }
+            
+            .left-panel, .right-panel {
+                display: none;
+            }
+            
+            .canvas-container {
+                height: 100%;
+                border-radius: 0;
+            }
+            
+            .bottom-panel {
+                padding: 10px;
+                min-height: auto;
+            }
+            
+            .control-buttons {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bottom-panel {
+                padding: 8px;
+            }
+            
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 9px;
+            }
+            
+            .progress-wrapper {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            border-bottom: 2px solid #00d4ff;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            min-height: 60px;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                padding: 10px 15px;
+                min-height: auto;
+                gap: 10px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+                text-align: center;
+                margin: 0;
+            }
+            
+            .arch-selector {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            
+            .arch-btn {
+                padding: 6px 10px;
+                font-size: 10px;
+            }
+        }
+        
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .arch-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .arch-btn {
+            padding: 8px 14px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 6px;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .arch-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+        }
+        
+        .arch-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            color: #fff;
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        .left-panel {
+            background: rgba(15, 20, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 15px;
+            overflow-y: auto;
+            min-width: 0;
+        }
+        
+        .panel-section {
+            margin-bottom: 20px;
+        }
+        
+        .panel-section h2 {
+            font-size: 16px;
+            color: #00d4ff;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            font-weight: 600;
+        }
+        
+        .input-buttons {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .input-btn {
+            padding: 10px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 6px;
+            color: #00d4ff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .input-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.1));
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 120px;
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            background: #000;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .param-control {
+            margin-bottom: 12px;
+        }
+        
+        .param-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        .param-value {
+            color: #00ff88;
+            font-weight: 600;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.5));
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #00d4ff, #00ff88);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+        }
+        
+        .data-info {
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 3px solid #00d4ff;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+        
+        .data-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .data-info-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .data-info-label {
+            color: #888;
+        }
+        
+        .data-info-value {
+            color: #00ff88;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .center-panel {
+            position: relative;
+            background: radial-gradient(circle at center, #0f1829 0%, #0a0e27 100%);
+        }
+        
+        #canvas-3d {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .layer-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            border: 2px solid #00d4ff;
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.4);
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .layer-overlay h3 {
+            font-size: 16px;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .detail-label {
+            color: #888;
+            font-size: 13px;
+        }
+        
+        .detail-value {
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .formula-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 255, 0.1));
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .formula-box code {
+            color: #00ff88;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        .tensor-preview {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff00ff;
+            border-radius: 12px;
+            padding: 15px;
+            min-width: 200px;
+        }
+        
+        .tensor-preview h4 {
+            color: #ff00ff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .tensor-viz {
+            width: 100%;
+            height: 120px;
+            background: #000;
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .right-panel {
+            background: rgba(15, 20, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 15px;
+            overflow-y: auto;
+            min-width: 0;
+        }
+        
+        .output-section {
+            margin-bottom: 15px;
+        }
+        
+        .layer-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .layer-item {
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 3px solid #00d4ff;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .layer-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .layer-item.active {
+            background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.05));
+            border-left-width: 5px;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .layer-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .layer-name {
+            font-weight: 600;
+            color: #00d4ff;
+            font-size: 14px;
+        }
+        
+        .layer-badge {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .layer-shape {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .play-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .play-btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 136, 0.1));
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+            color: #00ff88;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .play-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 255, 136, 0.2));
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .bottom-panel {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            border-top: 2px solid #00d4ff;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 90px;
+        }
+        
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .progress-bar-container {
+            flex: 1;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            position: relative;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00ff88, #ff00ff);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.3), 
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            color: #00d4ff;
+            font-weight: 600;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .control-btn.primary {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+        
+        .control-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.6);
+        }
+        
+        .control-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+        }
+        
+        .control-btn.secondary:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .explanation-text {
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00d4ff, #0099ff);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #00ff88, #00d4ff);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <h1> Music Generation Neural Symphony </h1>
+            <div class="arch-selector">
+                <button class="arch-btn active" data-arch="VAE">VAE</button>
+                <button class="arch-btn" data-arch="LSTM">LSTM</button>
+                <button class="arch-btn" data-arch="Transformer">Transformer</button>
+                <button class="arch-btn" data-arch="Diffusion">Diffusion</button>
+            </div>
+        </div>
+        
+        <div class="left-panel">
+            <div class="panel-section">
+                <h2>📥 Input Generation</h2>
+                <div class="input-buttons">
+                    <button class="input-btn" data-input="random">
+                        🎲 Random Melody<br>
+                        <small style="color: #666; font-size: 11px;">Generate random note sequence</small>
+                    </button>
+                    <button class="input-btn" data-input="scale">
+                        🎹 C Major Scale<br>
+                        <small style="color: #666; font-size: 11px;">Ascending & descending scale</small>
+                    </button>
+                    <button class="input-btn" data-input="chord">
+                        🎸 Chord Progression<br>
+                        <small style="color: #666; font-size: 11px;">I-IV-V-I progression</small>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h2>🎼 Input Visualization</h2>
+                <div class="canvas-container">
+                    <canvas id="input-canvas"></canvas>
+                </div>
+                <div class="data-info">
+                    <div class="data-info-row">
+                        <span class="data-info-label">Shape:</span>
+                        <span class="data-info-value" id="input-shape">[0, 88]</span>
+                    </div>
+                    <div class="data-info-row">
+                        <span class="data-info-label">Notes:</span>
+                        <span class="data-info-value" id="input-notes">0</span>
+                    </div>
+                    <div class="data-info-row">
+                        <span class="data-info-label">Duration:</span>
+                        <span class="data-info-value" id="input-duration">0.0s</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h2>⚙️ Parameters</h2>
+                <div class="param-control">
+                    <div class="param-label">
+                        <span>Temperature</span>
+                        <span class="param-value" id="temp-display">1.0</span>
+                    </div>
+                    <input type="range" id="temp-slider" min="0.1" max="2.0" step="0.1" value="1.0">
+                </div>
+                <div class="param-control">
+                    <div class="param-label">
+                        <span>Latent Dimension</span>
+                        <span class="param-value" id="latent-display">128</span>
+                    </div>
+                    <input type="range" id="latent-slider" min="32" max="512" step="32" value="128">
+                </div>
+                <div class="param-control">
+                    <div class="param-label">
+                        <span>Animation Speed</span>
+                        <span class="param-value" id="speed-display">1.0x</span>
+                    </div>
+                    <input type="range" id="speed-slider" min="0.5" max="3.0" step="0.5" value="1.0">
+                </div>
+            </div>
+        </div>
+        
+        <div class="center-panel">
+            <canvas id="canvas-3d"></canvas>
+            
+            <div class="layer-overlay" id="layer-info" style="display: none;">
+                <h3 id="layer-title">Input Layer</h3>
+                <div class="detail-grid">
+                    <span class="detail-label">Input Shape:</span>
+                    <span class="detail-value" id="detail-input">-</span>
+                    
+                    <span class="detail-label">Operation:</span>
+                    <span class="detail-value" id="detail-operation">-</span>
+                    
+                    <span class="detail-label">Output Shape:</span>
+                    <span class="detail-value" id="detail-output">-</span>
+                    
+                    <span class="detail-label">Parameters:</span>
+                    <span class="detail-value" id="detail-params">-</span>
+                </div>
+                <div class="formula-box">
+                    <code id="formula-text">f(x) = Wx + b</code>
+                </div>
+            </div>
+            
+            <div class="tensor-preview" id="tensor-preview" style="display: none;">
+                <h4>Tensor Activation</h4>
+                <canvas id="tensor-canvas" class="tensor-viz"></canvas>
+            </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="output-section">
+                <h2>🔬 Layer Explorer</h2>
+                <div class="layer-list" id="layer-list">
+                    <p style="text-align: center; color: #666; padding: 20px;">
+                        Generate input to see layers
+                    </p>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <h2>🎵 Generated Output</h2>
+                <div class="canvas-container">
+                    <canvas id="output-canvas"></canvas>
+                </div>
+                <div class="data-info">
+                    <div class="data-info-row">
+                        <span class="data-info-label">Shape:</span>
+                        <span class="data-info-value" id="output-shape">[0, 88]</span>
+                    </div>
+                    <div class="data-info-row">
+                        <span class="data-info-label">Notes:</span>
+                        <span class="data-info-value" id="output-notes">0</span>
+                    </div>
+                </div>
+                <div class="play-controls">
+                    <button class="play-btn" id="play-btn">🔊 Play</button>
+                    <button class="play-btn" id="stop-btn">⏹ Stop</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-panel">
+            <div class="progress-wrapper">
+                <span class="progress-text" id="progress-text">Step 0 / 0</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn primary" id="run-btn">▶️ Run Forward Pass</button>
+                <button class="control-btn secondary" id="step-forward-btn">⏭️ Step Forward</button>
+                <button class="control-btn secondary" id="step-back-btn">⏮️ Step Back</button>
+                <button class="control-btn secondary" id="reset-btn">🔄 Reset</button>
+                <button class="control-btn secondary" id="autoplay-btn">⏯️ Auto Play</button>
+            </div>
+            
+            <p class="explanation-text" id="explanation">
+                Select an architecture above and generate input data to begin the interactive visualization.
+            </p>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <script src="app-state.js"></script>
+    <script src="3d-engine.js"></script>
+    <script src="data-generator.js"></script>
+    <script src="visualization.js"></script>
+    <script src="audio-player.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
