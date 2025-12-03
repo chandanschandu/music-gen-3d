@@ -507,7 +507,7 @@ class Engine3D {
         canvas.height = 128;
         
         context.fillStyle = 'rgba(0, 212, 255, 0.9)';
-        context.font = 'bold 56px Inter'; // Normal font size
+        context.font = 'bold 24px Inter'; // Smaller font for 3D model labels
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(text, 256, 64);
@@ -520,7 +520,7 @@ class Engine3D {
         const sprite = new THREE.Sprite(material);
         
         sprite.position.set(x, y, z);
-        sprite.scale.set(10, 2.5, 1); // Normal text scale
+        sprite.scale.set(4, 1, 1); // Smaller text scale for 3D models
         
         this.scene.add(sprite);
     }
