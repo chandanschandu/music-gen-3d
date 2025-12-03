@@ -107,7 +107,7 @@ body {
 /* Layer Info Overlay */
 .layer-info-overlay {
     position: absolute;
-    top: 20px;
+    bottom: 20px;
     left: 20px;
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(10px);
@@ -308,6 +308,7 @@ canvas {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 5px;
     outline: none;
+    appearance: none;
     -webkit-appearance: none;
 }
 

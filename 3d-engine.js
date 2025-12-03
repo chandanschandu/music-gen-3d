@@ -35,7 +35,7 @@ class Engine3D {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setClearColor(0x0a0e27, 1);
         
-        this.camera.position.set(0, 8, 25); // Moved closer
+        this.camera.position.set(0, 5, 12); // Much closer for larger appearance
         this.camera.lookAt(0, 0, 0);
         
         // Fog for depth
@@ -130,7 +130,7 @@ class Engine3D {
         this.canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
             this.camera.position.z += e.deltaY * 0.02;
-            this.camera.position.z = Math.max(20, Math.min(60, this.camera.position.z));
+            this.camera.position.z = Math.max(8, Math.min(25, this.camera.position.z));
         });
     }
     
@@ -397,7 +397,7 @@ class Engine3D {
         this.clearNetwork();
         
         const layers = AppState.getCurrentArch().layers;
-        const spacing = 12; // Increased spacing
+        const spacing = 18; // Much larger spacing between layers
         const startX = -(layers.length - 1) * spacing / 2;
         
         layers.forEach((layer, index) => {
@@ -430,8 +430,8 @@ class Engine3D {
         
         // Calculate node count based on layer
         let nodeCount = this.getNodeCount(layerInfo.type);
-        const nodeRadius = layerInfo.type === 'latent' ? 0.6 : 0.3; // Further increased size
-        const spacing = 1.1; // Increased spacing
+        const nodeRadius = layerInfo.type === 'latent' ? 2.5 : 1.8; // Dramatically increased node size
+        const spacing = 3.5; // Much larger spacing between nodes
         
         // Create 3D arrangement
         const rows = Math.ceil(Math.sqrt(nodeCount));
@@ -507,7 +507,7 @@ class Engine3D {
         canvas.height = 128;
         
         context.fillStyle = 'rgba(0, 212, 255, 0.9)';
-        context.font = 'bold 56px Inter'; // Even larger font
+        context.font = 'bold 56px Inter'; // Normal font size
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(text, 256, 64);
@@ -520,7 +520,7 @@ class Engine3D {
         const sprite = new THREE.Sprite(material);
         
         sprite.position.set(x, y, z);
-        sprite.scale.set(10, 2.5, 1); // Even larger scale
+        sprite.scale.set(10, 2.5, 1); // Normal text scale
         
         this.scene.add(sprite);
     }
@@ -546,7 +546,7 @@ class Engine3D {
                     ];
                     
                     const curve = new THREE.CatmullRomCurve3(points);
-                    const tubeGeometry = new THREE.TubeGeometry(curve, 10, 0.02, 8, false);
+                    const tubeGeometry = new THREE.TubeGeometry(curve, 10, 0.15, 8, false);
                     const material = new THREE.MeshBasicMaterial({
                         color: 0x00d4ff,
                         transparent: true,
@@ -618,7 +618,7 @@ class Engine3D {
             
             if (!fromNode || !toNode || !fromNode.position) continue;
             
-            const geometry = new THREE.SphereGeometry(0.12, 12, 12);
+            const geometry = new THREE.SphereGeometry(0.6, 12, 12);
             const material = new THREE.MeshBasicMaterial({
                 color: 0x00ff88,
                 transparent: true,
@@ -1029,7 +1029,7 @@ class Engine3D {
             const z = lstmGroup.children[0].position.z;
             
             Object.entries(gateColors).forEach(([gateType, color], index) => {
-                const gateGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3);
+                const gateGeometry = new THREE.BoxGeometry(2.5, 2.5, 2.5);
                 const gateMaterial = new THREE.MeshPhongMaterial({
                     color: color,
                     emissive: color,
@@ -1085,7 +1085,7 @@ class Engine3D {
             const x = centerX + Math.cos(angle) * headRadius;
             const z = centerZ + Math.sin(angle) * headRadius;
             
-            const headGeometry = new THREE.ConeGeometry(0.2, 0.4, 8);
+            const headGeometry = new THREE.ConeGeometry(1.8, 3.5, 8);
             const headMaterial = new THREE.MeshPhongMaterial({
                 color: 0xff00ff,
                 emissive: 0xff00ff,
@@ -1102,7 +1102,7 @@ class Engine3D {
             this.scene.add(headNode);
             
             // Create Q, K, V visualization for each head
-            const qkvGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+            const qkvGeometry = new THREE.SphereGeometry(0.8, 8, 8);
             const qkvColors = [0x00d4ff, 0x00ff88, 0xff6600];
             const qkvLabels = ['Q', 'K', 'V'];
             
@@ -1151,7 +1151,7 @@ class Engine3D {
                     ];
                     
                     const curve = new THREE.CatmullRomCurve3(points);
-                    const tubeGeometry = new THREE.TubeGeometry(curve, 8, 0.02, 4, false);
+                    const tubeGeometry = new THREE.TubeGeometry(curve, 8, 0.3, 4, false);
                     const tubeMaterial = new THREE.MeshBasicMaterial({
                         color: 0xff00ff,
                         transparent: true,
@@ -1181,7 +1181,7 @@ class Engine3D {
             const z = centerZ + Math.sin(angle) * radius;
             
             // Timestep node
-            const stepGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.3, 16);
+            const stepGeometry = new THREE.CylinderGeometry(1.2, 1.2, 2.5, 16);
             const noiseLevel = t / timeSteps;
             
             // Color gradient from clean (green) to noisy (red)
@@ -1227,7 +1227,7 @@ class Engine3D {
             // Create noise particles for each timestep
             const particleCount = Math.floor(20 * noiseLevel);
             for (let p = 0; p < particleCount; p++) {
-                const particleGeometry = new THREE.SphereGeometry(0.03, 4, 4);
+                const particleGeometry = new THREE.SphereGeometry(0.25, 4, 4);
                 const particleMaterial = new THREE.MeshBasicMaterial({
                     color: 0xff6666,
                     transparent: true,
